@@ -5,6 +5,7 @@ class XmppshBot(ClientXMPP):
 
     def __init__(self, jid, password, parser):
         ClientXMPP.__init__(self, jid, password)
+        parser.registerCommand([("muc", ), ("join", "Joins a given MUC", self.cmdjoinMuc)])
 
         self.parser = parser
         self.register_plugin('xep_0045')
@@ -12,8 +13,6 @@ class XmppshBot(ClientXMPP):
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
         self.add_event_handler('groupchat_message', self.mucmessage)
-	
-
 
     def session_start(self, event):
         self.send_presence()
@@ -26,15 +25,36 @@ class XmppshBot(ClientXMPP):
         except IqTimeout:
             logging.error('Server is taking too long to respond')
             self.disconnect()
+        self.joinMUC("its_babos@conference.ruhr-uni-bochum.de", "XmppshBETA")
+
+    def cmdjoinMuc(self, param, fromUser):
+        try:
+            muc = param[0]
+            nick = param[1]
+            passwd = param[2] if len(param) == 3 else ""
+
+            self.joinMUC(muc, nick, passwd)
+        except:
+            return ("Something went wrong", 2)
+
+    def joinMUC(self, room, nick, mucpassword=""):
+        if mucpassword is not "":
+            self.plugin['xep_0045'].joinMUC(room, nick, password=mucpassword, wait=True)
+        else:
+            self.plugin['xep_0045'].joinMUC(room, nick, wait=True)
 
     def mucmessage(self, msg):
-        if msg['mucnick'] != self.nick and msg['body']:
-            response = self.parser(msg)
+        if msg['mucnick'] != "XmppshBETA" and msg['body']:
+            response = self.parser.parseMessage(msg)
             if response is not None:
-                msg.reply(response[0]).send()
+                print(msg['from'])
+                replymsg = msg.reply(response[0])
+                replymsg.send()
+
 
     def message(self, msg):
-        response = self.parser(msg)
-        if response is not None:
-            msg.reply(response[0]).send()
+        if msg['body'] and msg['type'] != 'groupchat':
+            response = self.parser.parseMessage(msg)
+            if response is not None:
+                msg.reply(response[0]).send()
 

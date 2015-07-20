@@ -1,4 +1,5 @@
 import socket
+import sqlite3
 
 class Plugin:
     def __init__(self, parser, sqlitecur):
@@ -8,7 +9,7 @@ class Plugin:
         parser.registerCommand([(u"ip", ), (u"register", "Register your IP", self._register)])
 
     def _list(self, ignore, fromUser):
-        self._cursor.execute("SELECT Name, IP FROM IPs WHERE MUC=?", (fromUser.getStripped(), ))
+        self._cursor.execute("SELECT Name, IP FROM IPs WHERE MUC=?", (fromUser.bare, ))
         rows = self._cursor.fetchall()
         msgtext = ""
         for r in rows:
@@ -18,8 +19,8 @@ class Plugin:
     def _register(self, ip, fromUser):
         try:
             socket.inet_aton(ip[0])
-            name = fromUser.getResource()
-            muc = fromUser.getStripped()
+            name = fromUser.resource
+            muc = fromUser.bare
             self._cursor.execute("UPDATE OR IGNORE IPs SET IP=? WHERE Name=? AND MUC=?", (ip[0], name, muc))
             if self._cursor.rowcount == 0:
                 self._cursor.execute("INSERT OR IGNORE INTO IPs (IP, Name, MUC) VALUES (?, ?, ?)", (ip[0], name, muc))
@@ -28,3 +29,4 @@ class Plugin:
             return ("Your IP looks malformed", 1)
         except:
             return ("You omitted the IP", 1)
+

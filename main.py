@@ -19,16 +19,15 @@ def loadPlugins(parser, sqlitecon):
             plugins[fname] = mod.Plugin(parser, sqlitecon.cursor())
     sys.path.pop(0)
 
-def main(user, password, muc):
+def main(user, password):
+    sqlitecon = sqlite3.connect('storage.db', check_same_thread=False, isolation_level=None)
     commandParser = msgParse()
-    sqlitecon = sqlite3.connect("storage.db")
-
     loadPlugins(commandParser, sqlitecon)
 
-    xmpp = XmppshBot(user, password, commandParser.parseMessage)
+    xmpp = XmppshBot(user, password, commandParser)
     xmpp.connect()
     xmpp.process(block=True)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.ERROR, format='%(levelname)-8s %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s %(message)s')
     main(sys.argv[1], sys.argv[2])
