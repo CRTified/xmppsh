@@ -4,6 +4,8 @@ from msgParse import msgParse
 from connector import XmppshBot
 import sqlite3
 import logging
+import getpass
+
 
 
 def loadPlugins(parser, sqlitecon):
@@ -24,10 +26,10 @@ def main(user, password):
     commandParser = msgParse()
     loadPlugins(commandParser, sqlitecon)
 
-    xmpp = XmppshBot(user, password, commandParser)
+    xmpp = XmppshBot(user, password, commandParser, sqlitecon)
     xmpp.connect()
     xmpp.process(block=True)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s %(message)s')
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], getpass.getpass())

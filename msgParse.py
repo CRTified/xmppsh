@@ -17,7 +17,7 @@ class msgParse:
         (c, param) = self._command.findByName(cmd[:])
         if c is not None and c._executeFunction is not None:
             if not c.isPermitted(self._getPermission(fromUser)):
-                return ("You are lacking the permission to execute this Command", 0)
+                return ("You are lacking the permission to execute this Command", 2)
             try:
                 return c._executeFunction(param, fromUser)
             except Exception as e:
@@ -39,7 +39,7 @@ class msgParse:
 
     def parseMessage(self, message):
         messageText = message['body']
-        comRet = self._executeCommand(messageText.split(" "), message['from'])
+        comRet = self._executeCommand(messageText.split(" "), message.getFrom()) #['from'])
 
         if comRet is None:
             comRet = self._executeTrigger(messageText, message.getFrom())
@@ -69,4 +69,4 @@ class msgParse:
         (c, param) = self._command.findByName(cmd)
         if c is not None:
             return ("Help:\n\n.\n" + c.manpage(-1), 1)
-        return (self._help(["help"], fromUser), 1)
+        return self._help(["help"], fromUser)
