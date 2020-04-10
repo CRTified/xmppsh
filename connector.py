@@ -1,13 +1,13 @@
-from sleekxmpp import ClientXMPP
-from sleekxmpp.exceptions import IqError, IqTimeout
+from slixmpp import ClientXMPP
+from slixmpp.exceptions import IqError, IqTimeout
 
 class XmppshBot(ClientXMPP):
 
-    def __init__(self, jid, password, parser, connection):
+    def __init__(self, jid, password, cmdparser, connection):
         ClientXMPP.__init__(self, jid, password)
-#        parser.registerCommand([("muc", ), ("join", "Joins a given MUC", self.cmdjoinMuc)])
+#        cmdparser.registerCommand([("muc", ), ("join", "Joins a given MUC", self.cmdjoinMuc)])
 
-        self.parser = parser
+        self.cmdparser = cmdparser
         self.connection = connection
         self.cursor = connection.cursor()
         self.register_plugin('xep_0045')
@@ -30,7 +30,7 @@ class XmppshBot(ClientXMPP):
         except IqTimeout:
             logging.error('Server is taking too long to respond')
             self.disconnect()
-        self.joinMUC("its_babos@conference.ruhr-uni-bochum.de", "l33tbot") # TODO
+        self.join_muc("xmppshtest@example.com", "l33tbot") # TODO
 
     def cmdjoinMuc(self, param, fromUser):
         try:
@@ -38,19 +38,19 @@ class XmppshBot(ClientXMPP):
             nick = param[1]
             passwd = param[2] if len(param) == 3 else ""
 
-            self.joinMUC(muc, nick, passwd)
+            self.join_muc(muc, nick, passwd)
         except:
             return ("Something went wrong", 2)
 
-    def joinMUC(self, room, nick=None, mucpassword=None):
+    def join_muc(self, room, nick=None, mucpassword=None):
         if mucpassword is not None:
-            self.plugin['xep_0045'].joinMUC(room, nick, password=mucpassword, wait=True)
+            self.plugin['xep_0045'].join_muc(room, nick, password=mucpassword, wait=True)
         else:
-            self.plugin['xep_0045'].joinMUC(room, nick, wait=True)
+            self.plugin['xep_0045'].join_muc(room, nick, wait=True)
 
     def mucmessage(self, msg):
-        if msg['from'] != self.plugin['xep_0045'].getOurJidInRoom(msg['from'].bare) and msg['body']:
-            response = self.parser.parseMessage(msg)
+        if msg['from'] != self.plugin['xep_0045'].get_our_jid_in_room(msg['from'].bare) and msg['body']:
+            response = self.cmdparser.parseMessage(msg)
             self.connection.commit()
             if response is not None:
                 print(msg['from'])
@@ -60,7 +60,7 @@ class XmppshBot(ClientXMPP):
 
     def message(self, msg):
         if msg['body'] and msg['type'] != 'groupchat':
-            response = self.parser.parseMessage(msg)
+            response = self.cmdparser.parseMessage(msg)
             self.connection.commit()
             if response is not None:
                 msg.reply(response[0]).send()

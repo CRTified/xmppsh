@@ -39,10 +39,10 @@ class msgParse:
 
     def parseMessage(self, message):
         messageText = message['body']
-        comRet = self._executeCommand(messageText.split(" "), message.getFrom()) #['from'])
+        comRet = self._executeCommand(messageText.split(" "), message.get_from()) #['from'])
 
         if comRet is None:
-            comRet = self._executeTrigger(messageText, message.getFrom())
+            comRet = self._executeTrigger(messageText, message.get_from())
         return comRet
 
 

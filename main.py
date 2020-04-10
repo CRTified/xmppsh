@@ -28,7 +28,7 @@ def main(user, password):
 
     xmpp = XmppshBot(user, password, commandParser, sqlitecon)
     xmpp.connect()
-    xmpp.process(block=True)
+    xmpp.process(forever=True)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s %(message)s')
